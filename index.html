@@ -7,22 +7,20 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="海女紀錄">
-<meta name="theme-color" content="#2c4d49">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c4d49'/%3E%3Cpath d='M8 40 Q16 32 24 40 T40 40 T56 40' stroke='%23eef0e5' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 48 Q16 40 24 48 T40 48 T56 48' stroke='%23cdbb8e' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='20' r='7' fill='%23eef0e5'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#eef6f4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23eef6f4'/%3E%3Cpath d='M8 26 Q20 16 32 26 T56 26' stroke='%232e7da6' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 42 Q20 32 32 42 T56 42' stroke='%2316282b' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Huninn:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#26343a; --ink-soft:#5c6b64; --paper:#eef0e5; --card:#f8f7f0;
-    --sea:#3f6b66; --sea-deep:#2c4d49; --sand:#cdbb8e; --coral:#b45a52;
-    --line: rgba(38,52,58,.16); --good:#4d7c5f;
+    --ink:#16282b; --paper:#eef6f4; --card:#ffffff; --line: rgba(22,40,43,.15);
+    --blue:#2e7da6; --pink:#1f6f78; --yellow:#3ba8a0; --green:#2f9488; --orange:#3ba8a0; --purple:#14535c;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:'Huninn',sans-serif;}
   html,body{height:100%;}
   body{
     margin:0; background:var(--paper); color:var(--ink);
-    font-family:'Noto Sans TC',sans-serif;
     padding-top:env(safe-area-inset-top,0px);
     padding-bottom:env(safe-area-inset-bottom,0px);
     overflow-x:hidden;
@@ -31,178 +29,166 @@
 
   /* Header */
   header{
-    padding:22px 20px 14px; position:relative;
+    padding:26px 20px 16px; position:relative;
+    background:var(--paper);
     border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg, var(--paper), var(--paper) 85%, transparent);
   }
-  header h1{
-    font-family:'Liu Jian Mao Cao', cursive; font-weight:400;
-    font-size:34px; margin:0; color:var(--sea-deep); line-height:1.1;
-    letter-spacing:1px;
-  }
-  header p.sub{margin:4px 0 0; font-family:'Noto Serif TC',serif; font-size:12px; color:var(--ink-soft); letter-spacing:2px;}
-  .wave-rule{margin-top:10px; width:64px; height:8px;}
+  header h1{ font-weight:700; font-size:24px; margin:0; color:var(--ink); line-height:1.3; letter-spacing:1px; }
+  header p.sub{ margin:6px 0 0; font-size:12px; color:var(--ink); font-weight:600; letter-spacing:3px; }
+  .wave-rule{margin-top:12px; width:60px; height:8px; display:block;}
   .gear-btn{
-    position:absolute; top:22px; right:18px; width:34px; height:34px; border-radius:50%;
-    border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center;
-    color:var(--ink-soft); cursor:pointer;
+    position:absolute; top:22px; right:18px; padding:7px 14px; border-radius:16px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer;
+    font-size:12.5px; font-weight:600;
   }
-  .gear-btn:active{background:var(--sand);}
+  .gear-btn:active{ background:var(--paper); }
 
   /* Settings panel */
-  .settings{
-    display:none; padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line);
-  }
+  .settings{ display:none; padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
   .settings.open{display:block;}
-  .settings label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:6px;}
+  .settings label{font-size:12.5px; color:var(--ink); font-weight:600; display:block; margin-bottom:6px;}
   .settings input[type=text]{
-    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:6px; background:#fff;
-    font-family:monospace; font-size:12px; color:var(--ink);
+    width:100%; padding:10px 10px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    font-family:monospace; font-size:12px; color:var(--ink); font-weight:600;
   }
   .settings .row{display:flex; gap:8px; margin-top:10px;}
-  .status-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--sand);}
-  .status-dot.on{background:var(--good);}
-  .status-dot.off{background:var(--coral);}
-  .status-line{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+  .status-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--line);}
+  .status-dot.on{background:var(--green);}
+  .status-dot.off{background:var(--pink);}
+  .status-line{font-size:12px; color:var(--ink); font-weight:600; margin-top:10px;}
 
-  main{flex:1; padding:18px 20px 100px;}
+  main{flex:1; padding:20px 18px 118px;}
   section.view{display:none;}
   section.view.active{display:block;}
 
-  h2.section-title{
-    font-family:'Noto Serif TC',serif; font-weight:600; font-size:18px; margin:0 0 4px;
-    color:var(--sea-deep);
-  }
-  p.section-hint{font-size:12.5px; color:var(--ink-soft); margin:0 0 16px;}
+  h2.section-title{ font-weight:700; font-size:19px; margin:0 0 4px; color:var(--ink); }
+  p.section-hint{font-size:13px; font-weight:600; color:var(--ink); margin:0 0 18px;}
 
   /* Form */
-  .field{margin-bottom:18px;}
+  .field{margin-bottom:20px;}
   .field > label{
-    display:block; font-family:'Noto Serif TC',serif; font-size:13px; font-weight:600;
-    color:var(--ink); margin-bottom:8px;
+    display:inline-block; font-size:13.5px; font-weight:600; color:var(--ink); margin-bottom:9px;
+    padding-bottom:3px; border-bottom:1px dashed var(--line);
   }
   .chips{display:flex; flex-wrap:wrap; gap:8px;}
   .chip{
     padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:var(--card);
-    font-size:13.5px; color:var(--ink-soft); cursor:pointer; user-select:none; transition:.15s;
+    font-size:13.5px; font-weight:600; color:var(--ink); cursor:pointer; user-select:none; transition:.15s;
   }
-  .chip.sel{background:var(--sea); border-color:var(--sea); color:#fff;}
-  .chip.sel.alt{background:var(--coral); border-color:var(--coral);}
-  .field.err .chips{box-shadow:0 0 0 2px var(--coral); border-radius:20px; animation:shake .3s;}
+  .chip.sel{background:var(--pink); border-color:var(--pink); color:#fff;}
+  .field.err .chips{animation:shake .3s;}
   @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
-  input[type=date], input[type=text].txt{
+  input[type=date], input[type=text].txt, input[type=number].txt{
     width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:8px;
-    background:#fff; font-size:15px; color:var(--ink); font-family:'Noto Sans TC',sans-serif;
+    background:#fff; font-size:15px; font-weight:500; color:var(--ink);
   }
-  .time-row{display:flex; align-items:center; gap:6px;}
+  .time-row{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
   .time-row input{
     width:64px; text-align:center; padding:11px 6px; border:1px solid var(--line); border-radius:8px;
-    background:#fff; font-size:16px; color:var(--ink); font-variant-numeric:tabular-nums;
+    background:#fff; font-size:16px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums;
   }
-  .time-row span{color:var(--ink-soft); font-size:13px;}
+  .time-row span{color:var(--ink); font-size:13px; font-weight:600;}
   .distance-wrap{margin-top:10px; display:none;}
   .distance-wrap.show{display:block;}
 
   .submit-btn{
-    width:100%; padding:14px; margin-top:6px; border:none; border-radius:10px;
-    background:var(--sea-deep); color:#fff; font-size:15.5px; font-family:'Noto Serif TC',serif;
-    font-weight:600; letter-spacing:2px; cursor:pointer;
+    width:100%; padding:15px; margin-top:6px; border:none; border-radius:10px;
+    background:var(--blue); color:#fff; font-size:15.5px; font-weight:700; letter-spacing:2px; cursor:pointer;
+    box-shadow:0 3px 10px rgba(43,36,29,.18);
   }
-  .submit-btn:active{background:var(--sea);}
+  .submit-btn:active{ background:#3d5561; box-shadow:0 1px 4px rgba(43,36,29,.18); }
   .toast{
     position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(10px);
-    background:var(--sea-deep); color:#fff; padding:10px 20px; border-radius:20px; font-size:13.5px;
+    background:var(--ink); color:#fff; padding:10px 20px; border-radius:20px; font-size:13.5px; font-weight:600;
     opacity:0; transition:.25s; pointer-events:none; z-index:50; white-space:nowrap;
+    box-shadow:0 3px 10px rgba(43,36,29,.2);
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  /* Cards shared */
+  .pop-card{background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 1px 4px rgba(43,36,29,.07);}
+
   /* PB table */
-  .pb-group{margin-bottom:20px;}
+  .pb-group{margin-bottom:18px; overflow:hidden;}
   .pb-group h3{
-    font-family:'Noto Serif TC',serif; font-size:14.5px; color:var(--sea-deep); margin:0 0 8px;
-    border-bottom:1px dashed var(--sand); padding-bottom:6px;
+    margin:0; padding:10px 14px; font-size:15px; font-weight:700; color:var(--ink);
+    border-bottom:1px dashed var(--line); display:flex; align-items:center; gap:8px;
   }
+  .pb-group h3 .dot{width:9px; height:9px; border-radius:50%; display:inline-block;}
   table.pb{width:100%; border-collapse:collapse; font-size:13px;}
-  table.pb td, table.pb th{padding:8px 6px; text-align:left; border-bottom:1px solid var(--line);}
-  table.pb th{color:var(--ink-soft); font-weight:500; font-size:11.5px;}
-  table.pb td.time{font-variant-numeric:tabular-nums; color:var(--sea-deep); font-weight:600;}
-  table.pb td.empty{color:var(--ink-soft); font-style:italic;}
+  table.pb td, table.pb th{padding:9px 10px; text-align:left; border-bottom:1px solid var(--line);}
+  table.pb tr:last-child td{border-bottom:none;}
+  table.pb th{color:var(--ink); font-weight:600; font-size:11.5px;}
+  table.pb td.time{font-variant-numeric:tabular-nums; font-weight:700; font-size:15px;}
+  table.pb td.empty{color:var(--ink); font-weight:600; font-style:italic;}
 
   /* Chart view */
-  .stroke-tabs{display:flex; gap:8px; margin-bottom:10px;}
-  .stroke-tabs .chip{flex:1; text-align:center;}
+  .stroke-tabs{display:flex; gap:7px; margin-bottom:10px; flex-wrap:wrap;}
+  .stroke-tabs .chip{flex:1; min-width:60px; text-align:center;}
   .dist-tabs{display:flex; gap:8px; margin-bottom:16px;}
-  .dist-tabs .chip{flex:1; text-align:center; padding:6px 10px; border-radius:8px;}
-  .chart-card{
-    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 10px 6px;
-  }
+  .dist-tabs .chip{flex:1; text-align:center; padding:7px 10px; border-radius:8px;}
+  .chart-card{padding:14px 10px 6px;}
   .delta-badge{
-    display:flex; align-items:center; gap:8px; margin:14px 2px 0; font-size:13.5px; color:var(--ink-soft);
+    display:flex; align-items:center; gap:8px; margin:14px 4px 0; font-size:13.5px; font-weight:600; color:var(--ink);
   }
   .delta-badge .arrow{font-size:16px;}
-  .delta-badge .arrow.down{color:var(--good);}
-  .delta-badge .arrow.up{color:var(--coral);}
-  .empty-note{
-    text-align:center; color:var(--ink-soft); font-size:13px; padding:30px 10px; font-family:'Noto Serif TC',serif;
-  }
+  .delta-badge .arrow.down{color:var(--green);}
+  .delta-badge .arrow.up{color:var(--pink);}
+  .empty-note{ text-align:center; color:var(--ink); font-weight:600; font-size:13.5px; padding:30px 10px; }
 
-  /* Filters + records table */
+  /* Filters + record cards */
   .filter-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
   select.filter{
-    padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff;
-    font-size:12.5px; color:var(--ink); font-family:'Noto Sans TC',sans-serif;
+    padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    font-size:13px; font-weight:600; color:var(--ink);
   }
-  .records-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:10px;}
-  table.rec{width:100%; border-collapse:collapse; font-size:12px; min-width:640px;}
-  table.rec th{
-    background:var(--sea-deep); color:#f4efe4; padding:9px 8px; text-align:left; font-weight:500;
-    position:sticky; top:0;
+  .record-card{padding:9px 13px; margin-bottom:8px;}
+  .record-card .row1{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;}
+  .record-card .date{font-weight:600; font-size:12px;}
+  .tag{
+    display:inline-block; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:600; color:#fff;
   }
-  table.rec td{padding:8px; border-bottom:1px solid var(--line); white-space:nowrap;}
-  table.rec tr:nth-child(even){background:rgba(205,187,142,.14);}
-  table.rec td.time{font-weight:600; color:var(--sea-deep); font-variant-numeric:tabular-nums;}
+  .record-card .compname{font-weight:700; font-size:13.5px; margin:4px 0 4px;}
+  .record-card .meta{display:flex; flex-wrap:wrap; gap:5px; font-size:10.5px; font-weight:600; color:var(--ink);}
+  .record-card .meta span{background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:1px 7px;}
+  .record-card .time-big{font-size:18px; font-weight:700; color:var(--ink); text-align:right;}
+  .record-card .row2{display:flex; justify-content:space-between; align-items:flex-end; margin-top:3px;}
+  .no-records{text-align:center; font-weight:600; color:var(--ink); padding:24px; }
 
-  /* Bottom nav */
+  /* Bottom nav: card-style, text only */
   nav.tabbar{
-    position:fixed; left:0; right:0; bottom:0; z-index:40;
-    display:flex; max-width:560px; margin:0 auto; width:100%;
-    background:var(--card); border-top:1px solid var(--line);
-    padding-bottom:env(safe-area-inset-bottom,0px);
+    position:fixed; left:14px; right:14px; z-index:40;
+    bottom:calc(14px + env(safe-area-inset-bottom,0px));
+    max-width:532px; margin:0 auto;
+    display:flex; gap:5px;
+    background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:6px; box-shadow:0 6px 18px rgba(22,40,43,.14);
   }
   nav.tabbar button{
-    flex:1; background:none; border:none; padding:10px 4px 8px; display:flex; flex-direction:column;
-    align-items:center; gap:3px; color:var(--ink-soft); cursor:pointer; font-family:'Noto Sans TC',sans-serif;
+    flex:1; background:none; border:none; padding:9px 4px 8px; border-radius:13px;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    color:var(--ink); cursor:pointer; font-weight:600; font-size:12px;
   }
-  nav.tabbar button svg{width:20px; height:20px;}
-  nav.tabbar button span{font-size:10.5px;}
-  nav.tabbar button.active{color:var(--sea-deep);}
-  nav.tabbar button.active svg{stroke:var(--coral);}
-
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --paper:#1c2422; --card:#232d2a; --ink:#e9e6da; --ink-soft:#a7ab9e; --line:rgba(233,230,218,.14);
-    }
-  }
+  nav.tabbar button svg{width:16px; height:16px;}
+  nav.tabbar button.active{background:var(--blue); color:#fff;}
 </style>
 </head>
 <body>
 <div class="app">
 
   <header>
-    <button class="gear-btn" id="gearBtn" aria-label="設定">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
+    <button class="gear-btn" id="gearBtn" aria-label="設定">設定</button>
     <h1>FIFI的海女比賽紀錄</h1>
     <p class="sub">SWIM MEET LOG · 泳道上的每一秒</p>
-    <svg class="wave-rule" viewBox="0 0 64 8"><path d="M0 4 Q8 0 16 4 T32 4 T48 4 T64 4" stroke="#b45a52" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    <svg class="wave-rule" viewBox="0 0 60 8"><path d="M0 4 Q7.5 0 15 4 T30 4 T45 4 T60 4" stroke="#2e7da6" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
   </header>
 
   <div class="settings" id="settingsPanel">
     <label>Google Sheet 連結網址（Apps Script Web App URL）</label>
     <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/xxxx/exec">
     <div class="row">
-      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;" id="saveApiBtn">儲存</button>
-      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;background:var(--sea);" id="syncBtn">🔄 從雲端同步</button>
+      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;box-shadow:2px 2px 0 var(--border);" id="saveApiBtn">儲存</button>
+      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;background:var(--green);box-shadow:2px 2px 0 var(--border);" id="syncBtn">🔄 從雲端同步</button>
     </div>
     <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="statusText">尚未連接雲端試算表，目前僅儲存在本機瀏覽器</span></div>
   </div>
@@ -271,6 +257,11 @@
       </div>
 
       <div class="field">
+        <label>名次</label>
+        <input type="text" id="f-rank" class="txt" placeholder="例：3（選填）" inputmode="numeric" style="max-width:160px;">
+      </div>
+
+      <div class="field">
         <label>出發方式</label>
         <div class="chips" id="f-dive">
           <div class="chip" data-v="無跳水">無跳水</div>
@@ -307,13 +298,14 @@
         <div class="chip" data-v="仰式">仰式</div>
         <div class="chip" data-v="蛙式">蛙式</div>
         <div class="chip" data-v="蝶式">蝶式</div>
+        <div class="chip" data-v="混合式">混合式</div>
       </div>
       <div class="dist-tabs" id="chartDistTabs">
         <div class="chip sel" data-v="50">50m</div>
         <div class="chip" data-v="100">100m</div>
         <div class="chip" data-v="200">200m</div>
       </div>
-      <div class="chart-card">
+      <div class="chart-card pop-card">
         <svg id="growthChart" viewBox="0 0 300 180" style="width:100%;height:auto;display:block;"></svg>
       </div>
       <div class="delta-badge" id="deltaBadge"></div>
@@ -322,19 +314,12 @@
     <!-- FULL RECORDS -->
     <section class="view" id="view-records">
       <h2 class="section-title">全紀錄查詢</h2>
-      <p class="section-hint">完整比賽軌跡，可依條件篩選。</p>
+      <p class="section-hint">完整比賽軌跡，可依項目與距離篩選。</p>
       <div class="filter-wrap">
         <select class="filter" id="rf-stroke"><option value="">項目：全部</option><option>自由式</option><option>仰式</option><option>蛙式</option><option>蝶式</option><option>混合式</option><option>接力</option></select>
         <select class="filter" id="rf-distance"><option value="">距離：全部</option><option value="50">50m</option><option value="100">100m</option><option value="200">200m</option></select>
-        <select class="filter" id="rf-team"><option value="">泳隊：全部</option><option>裕德泳隊</option><option>鬍子泳隊</option></select>
-        <select class="filter" id="rf-age"><option value="">歲級：全部</option><option>中年級</option><option>高年級</option><option>10歲級以下</option><option>11至12歲級</option></select>
       </div>
-      <div class="records-scroll">
-        <table class="rec">
-          <thead><tr><th>日期</th><th>比賽名稱</th><th>泳隊</th><th>歲級</th><th>項目</th><th>出發方式</th><th>泳池</th><th>秒數</th></tr></thead>
-          <tbody id="recordsBody"></tbody>
-        </table>
-      </div>
+      <div id="recordsCards"></div>
     </section>
 
   </main>
@@ -343,19 +328,19 @@
 
   <nav class="tabbar">
     <button class="active" data-view="view-add">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
       <span>新增紀錄</span>
     </button>
     <button data-view="view-pb">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="5"/><path d="M8.5 13 7 22l5-3 5 3-1.5-9"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 14.5 8.5 20.5 9.3 16 13.3 17.2 19.3 12 16.3 6.8 19.3 8 13.3 3.5 9.3 9.5 8.5Z"/></svg>
       <span>個人最佳</span>
     </button>
     <button data-view="view-chart">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17 9 11 13 15 21 6"/><path d="M3 21h18"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18 9 12 13 15 20 7"/><path d="M4 21h16"/></svg>
       <span>成長曲線</span>
     </button>
     <button data-view="view-records">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="5" rx="1.5"/><rect x="4" y="14" width="16" height="5" rx="1.5"/></svg>
       <span>全紀錄</span>
     </button>
   </nav>
@@ -368,9 +353,13 @@
 
   var CONFIG_KEY = 'fifi_swim_config_v1';
   var CACHE_KEY  = 'fifi_swim_records_v1';
-  var STROKES4 = ['自由式','仰式','蛙式','蝶式'];
   var STROKES_PB = ['自由式','仰式','蛙式','蝶式','混合式'];
+  var STROKES_CHART = ['自由式','仰式','蛙式','蝶式','混合式'];
   var DISTANCES = ['50','100','200'];
+  var STROKE_COLOR = {
+    '自由式':'var(--blue)', '仰式':'var(--pink)', '蛙式':'var(--green)',
+    '蝶式':'var(--orange)', '混合式':'var(--purple)', '接力':'#5fb3a8'
+  };
 
   var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
   var records = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
@@ -399,7 +388,7 @@
   function uid(){ return 'r'+Date.now()+Math.random().toString(36).slice(2,7); }
 
   // ---------- chip groups ----------
-  function chipGroup(containerId, onChange, multi){
+  function chipGroup(containerId, onChange){
     var el = document.getElementById(containerId);
     el.addEventListener('click', function(e){
       var chip = e.target.closest('.chip');
@@ -413,6 +402,16 @@
     var el = document.getElementById(containerId);
     var sel = el.querySelector('.chip.sel');
     return sel ? sel.getAttribute('data-v') : null;
+  }
+  function setChipDefault(containerId, value){
+    var el = $(containerId);
+    Array.prototype.forEach.call(el.children, function(c){
+      c.classList.toggle('sel', c.getAttribute('data-v')===value);
+    });
+  }
+  function clearChipGroup(containerId){
+    var el = $(containerId);
+    Array.prototype.forEach.call(el.children, function(c){ c.classList.remove('sel'); });
   }
 
   chipGroup('f-team'); chipGroup('f-age'); chipGroup('f-dive'); chipGroup('f-pool');
@@ -455,7 +454,7 @@
             return {
               id: d.id, date: d.date, compName: d.compName, team: d.team, ageGroup: d.ageGroup,
               stroke: d.stroke, distance: String(d.distance), diveType: d.diveType,
-              poolType: d.poolType, seconds: parseFloat(d.seconds)
+              poolType: d.poolType, seconds: parseFloat(d.seconds), rank: d.rank || ''
             };
           });
           saveCache();
@@ -477,6 +476,19 @@
   function clearErrors(){
     document.querySelectorAll('.field.err').forEach(function(f){ f.classList.remove('err'); });
   }
+  function resetForm(){
+    $('f-compName').value='';
+    $('f-rank').value='';
+    $('f-min').value=''; $('f-sec').value=''; $('f-hun').value='';
+    $('f-date').valueAsDate = new Date();
+    setChipDefault('f-team','裕德泳隊');
+    setChipDefault('f-age','11至12歲級');
+    setChipDefault('f-dive','跳水台(新式)');
+    setChipDefault('f-pool','長池');
+    clearChipGroup('f-stroke');
+    clearChipGroup('f-distance');
+    $('distWrap').classList.remove('show');
+  }
 
   $('submitBtn').addEventListener('click', function(){
    try{
@@ -489,6 +501,7 @@
     var distance = selectedValue('f-distance');
     var diveType = selectedValue('f-dive');
     var poolType = selectedValue('f-pool');
+    var rank = $('f-rank').value.trim();
     var min = parseInt($('f-min').value)||0;
     var sec = parseInt($('f-sec').value)||0;
     var hun = parseInt($('f-hun').value)||0;
@@ -502,7 +515,7 @@
 
     var rec = {
       id: uid(), date: date, compName: compName, team: team, ageGroup: ageGroup,
-      stroke: stroke, distance: distance, diveType: diveType, poolType: poolType, seconds: seconds
+      stroke: stroke, distance: distance, diveType: diveType, poolType: poolType, seconds: seconds, rank: rank
     };
     records.push(rec);
     saveCache();
@@ -517,8 +530,7 @@
       }).catch(function(){ toast('已存本機，但雲端寫入失敗'); });
     }
 
-    // reset a few fields for the next entry
-    $('f-min').value=''; $('f-sec').value=''; $('f-hun').value='';
+    resetForm();
    } catch(err){
     toast('發生錯誤：'+err.message);
    }
@@ -535,8 +547,10 @@
     wrap.innerHTML = '';
     STROKES_PB.forEach(function(stroke){
       var group = document.createElement('div');
-      group.className = 'pb-group';
-      var h = document.createElement('h3'); h.textContent = stroke; group.appendChild(h);
+      group.className = 'pb-group pop-card';
+      var h = document.createElement('h3');
+      h.innerHTML = '<span class="dot" style="background:'+STROKE_COLOR[stroke]+'"></span>'+stroke;
+      group.appendChild(h);
       var table = document.createElement('table'); table.className='pb';
       table.innerHTML = '<thead><tr><th>公尺</th><th>秒數</th><th>日期</th><th>比賽名稱</th></tr></thead>';
       var tbody = document.createElement('tbody');
@@ -544,7 +558,7 @@
         var pb = computePB(stroke, d);
         var tr = document.createElement('tr');
         if(pb){
-          tr.innerHTML = '<td>'+d+'m</td><td class="time">'+secToDisplay(pb.seconds)+'</td><td>'+pb.date+'</td><td>'+pb.compName+'</td>';
+          tr.innerHTML = '<td>'+d+'m</td><td class="time" style="color:'+STROKE_COLOR[stroke]+'">'+secToDisplay(pb.seconds)+'</td><td>'+pb.date+'</td><td>'+pb.compName+'</td>';
         } else {
           tr.innerHTML = '<td>'+d+'m</td><td class="empty" colspan="3">尚無紀錄</td>';
         }
@@ -572,6 +586,10 @@
       return;
     }
 
+    var dotColor = getComputedStyle(document.documentElement).getPropertyValue(
+      (STROKE_COLOR[chartStroke]||'var(--pink)').replace('var(','').replace(')','')
+    ).trim() || '#ff4f7e';
+
     var W=300,H=180,padL=40,padR=12,padT=12,padB=24;
     var plotW=W-padL-padR, plotH=H-padT-padB;
     var secs = list.map(function(r){ return r.seconds; });
@@ -587,34 +605,30 @@
     for(var t=0;t<=ticks;t++){
       var v = yMin + (yMax-yMin)*t/ticks;
       var y = yAt(v);
-      gridSvg += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#26343a" stroke-opacity="0.08" stroke-width="0.6"/>';
-      yLabelSvg += '<text x="'+(padL-5)+'" y="'+(y+2.6).toFixed(1)+'" text-anchor="end" font-size="6.5" fill="#5c6b64" font-family="Noto Sans TC, sans-serif">'+secToDisplay(v)+'</text>';
+      gridSvg += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#15161a" stroke-opacity="0.15" stroke-width="0.6"/>';
+      yLabelSvg += '<text x="'+(padL-5)+'" y="'+(y+2.6).toFixed(1)+'" text-anchor="end" font-size="7" font-weight="700" fill="#15161a">'+secToDisplay(v)+'</text>';
     }
 
     var pathD = list.map(function(r,i){ return (i===0?'M':'L')+xAt(i).toFixed(1)+','+yAt(r.seconds).toFixed(1); }).join(' ');
     var dotsSvg = list.map(function(r,i){
-      return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(r.seconds).toFixed(1)+'" r="3.2" fill="#b45a52"><title>'+r.date+' '+secToDisplay(r.seconds)+'</title></circle>';
+      return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(r.seconds).toFixed(1)+'" r="3.6" fill="'+dotColor+'" stroke="#15161a" stroke-width="1.2"><title>'+r.date+' '+secToDisplay(r.seconds)+'</title></circle>';
     }).join('');
     var xLabelSvg = list.map(function(r,i){
       var show = list.length<=5 || i===0 || i===list.length-1 || i===Math.floor((list.length-1)/2);
       if(!show) return '';
-      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="6.5" fill="#5c6b64" font-family="Noto Sans TC, sans-serif">'+r.date.slice(5)+'</text>';
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="7" font-weight="700" fill="#15161a">'+r.date.slice(5)+'</text>';
     }).join('');
 
     svg.innerHTML = gridSvg + yLabelSvg
-      + '<path d="'+pathD+'" fill="none" stroke="#3f6b66" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '<path d="'+pathD+'" fill="none" stroke="#15161a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
       + dotsSvg + xLabelSvg;
 
-    // delta badge: compare gap-to-PB between the two most recent swims
     var pb = computePB(chartStroke, chartDist);
-    if(list.length<2 || !pb){
-      badge.innerHTML = '';
-      return;
-    }
+    if(list.length<2 || !pb){ badge.innerHTML=''; return; }
     var latest = list[list.length-1], prev = list[list.length-2];
     var gapLatest = latest.seconds - pb.seconds;
     var gapPrev = prev.seconds - pb.seconds;
-    var diff = gapPrev - gapLatest; // positive = getting closer to PB (improving)
+    var diff = gapPrev - gapLatest;
     var html;
     if(gapLatest===0){
       html = '<span class="arrow down">🏅</span> 這是目前的最佳成績！';
@@ -628,25 +642,32 @@
     badge.innerHTML = html;
   }
 
-  // ---------- Full records ----------
-  ['rf-stroke','rf-distance','rf-team','rf-age'].forEach(function(id){
-    $(id).addEventListener('change', renderRecords);
-  });
+  // ---------- Full records (card view) ----------
+  ['rf-stroke','rf-distance'].forEach(function(id){ $(id).addEventListener('change', renderRecords); });
+
   function renderRecords(){
-    var fs = $('rf-stroke').value, fd = $('rf-distance').value, ft = $('rf-team').value, fa = $('rf-age').value;
+    var fs = $('rf-stroke').value, fd = $('rf-distance').value;
     var list = records.filter(function(r){
-      return (!fs || r.stroke===fs) && (!fd || r.distance===fd) && (!ft || r.team===ft) && (!fa || r.ageGroup===fa);
+      return (!fs || r.stroke===fs) && (!fd || r.distance===fd);
     }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
-    var body = $('recordsBody');
+    var wrap = $('recordsCards');
     if(!list.length){
-      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:20px;">沒有符合條件的紀錄</td></tr>';
+      wrap.innerHTML = '<div class="no-records">沒有符合條件的紀錄</div>';
       return;
     }
-    body.innerHTML = list.map(function(r){
-      return '<tr><td>'+r.date+'</td><td>'+r.compName+'</td><td>'+r.team+'</td><td>'+r.ageGroup+'</td>'
-        +'<td>'+r.stroke+' '+r.distance+'m</td><td>'+r.diveType+'</td><td>'+r.poolType+'</td>'
-        +'<td class="time">'+secToDisplay(r.seconds)+'</td></tr>';
+    wrap.innerHTML = list.map(function(r){
+      var color = STROKE_COLOR[r.stroke] || 'var(--blue)';
+      var rankHtml = r.rank ? '<span>名次 '+r.rank+'</span>' : '';
+      return '<div class="record-card pop-card">'
+        + '<div class="row1">'
+        +   '<span class="date">'+r.date+'</span>'
+        +   '<span class="tag" style="background:'+color+'">'+r.stroke+' '+r.distance+'m</span>'
+        + '</div>'
+        + '<div class="compname">'+r.compName+'</div>'
+        + '<div class="meta"><span>'+r.team+'</span><span>'+r.ageGroup+'</span><span>'+r.diveType+'</span><span>'+r.poolType+'</span>'+rankHtml+'</div>'
+        + '<div class="row2"><span></span><span class="time-big">'+secToDisplay(r.seconds)+'</span></div>'
+        + '</div>';
     }).join('');
   }
 
