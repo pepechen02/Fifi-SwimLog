@@ -12,7 +12,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 <style>
   :root{
     --ink:#26343a; --ink-soft:#5c6b64; --paper:#eef0e5; --card:#f8f7f0;
@@ -89,6 +88,8 @@
   }
   .chip.sel{background:var(--sea); border-color:var(--sea); color:#fff;}
   .chip.sel.alt{background:var(--coral); border-color:var(--coral);}
+  .field.err .chips{box-shadow:0 0 0 2px var(--coral); border-radius:20px; animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
   input[type=date], input[type=text].txt{
     width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:8px;
     background:#fff; font-size:15px; color:var(--ink); font-family:'Noto Sans TC',sans-serif;
@@ -241,7 +242,7 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="field-stroke">
         <label>比賽項目</label>
         <div class="chips" id="f-stroke">
           <div class="chip" data-v="自由式">自由式</div>
@@ -260,7 +261,7 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="field-time">
         <label>成績秒數</label>
         <div class="time-row">
           <input type="number" id="f-min" min="0" placeholder="0"><span>分</span>
@@ -313,7 +314,7 @@
         <div class="chip" data-v="200">200m</div>
       </div>
       <div class="chart-card">
-        <canvas id="growthChart" height="220"></canvas>
+        <svg id="growthChart" viewBox="0 0 300 180" style="width:100%;height:auto;display:block;"></svg>
       </div>
       <div class="delta-badge" id="deltaBadge"></div>
     </section>
@@ -375,7 +376,6 @@
   var records = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
 
   var chartStroke = '自由式', chartDist = '50';
-  var chartInstance = null;
 
   // ---------- helpers ----------
   function $(id){ return document.getElementById(id); }
@@ -467,7 +467,20 @@
   }
 
   // ---------- submit ----------
+  function markError(fieldId){
+    var f = document.getElementById(fieldId);
+    if(!f) return;
+    f.classList.add('err');
+    f.scrollIntoView({behavior:'smooth', block:'center'});
+    setTimeout(function(){ f.classList.remove('err'); }, 1500);
+  }
+  function clearErrors(){
+    document.querySelectorAll('.field.err').forEach(function(f){ f.classList.remove('err'); });
+  }
+
   $('submitBtn').addEventListener('click', function(){
+   try{
+    clearErrors();
     var date = $('f-date').value;
     var compName = $('f-compName').value.trim();
     var team = selectedValue('f-team');
@@ -481,11 +494,11 @@
     var hun = parseInt($('f-hun').value)||0;
 
     if(!date){ toast('請選擇比賽日期'); return; }
-    if(!compName){ toast('請輸入比賽名稱'); return; }
-    if(!stroke){ toast('請選擇比賽項目'); return; }
-    if(!distance){ toast('請選擇公尺數'); return; }
+    if(!compName){ toast('請輸入比賽名稱'); $('f-compName').focus(); return; }
+    if(!stroke){ toast('請先點選比賽項目'); markError('field-stroke'); return; }
+    if(!distance){ toast('請點選公尺數（50/100/200）'); markError('field-stroke'); return; }
     var seconds = min*60 + sec + hun/100;
-    if(seconds<=0){ toast('請輸入成績秒數'); return; }
+    if(seconds<=0){ toast('請輸入成績秒數'); markError('field-time'); return; }
 
     var rec = {
       id: uid(), date: date, compName: compName, team: team, ageGroup: ageGroup,
@@ -506,6 +519,9 @@
 
     // reset a few fields for the next entry
     $('f-min').value=''; $('f-sec').value=''; $('f-hun').value='';
+   } catch(err){
+    toast('發生錯誤：'+err.message);
+   }
   });
 
   // ---------- PB ----------
@@ -547,36 +563,47 @@
   function renderChart(){
     var list = records.filter(function(r){ return r.stroke===chartStroke && r.distance===chartDist; })
                        .sort(function(a,b){ return a.date.localeCompare(b.date); });
-    var canvas = $('growthChart');
+    var svg = $('growthChart');
     var badge = $('deltaBadge');
 
-    if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
-
     if(list.length===0){
-      canvas.style.display='none';
+      svg.innerHTML='';
       badge.innerHTML = '<div class="empty-note">'+chartStroke+' '+chartDist+'m 尚無紀錄，新增第一筆吧。</div>';
       return;
     }
-    canvas.style.display='block';
 
-    var labels = list.map(function(r){ return r.date; });
-    var data = list.map(function(r){ return r.seconds; });
+    var W=300,H=180,padL=40,padR=12,padT=12,padB=24;
+    var plotW=W-padL-padR, plotH=H-padT-padB;
+    var secs = list.map(function(r){ return r.seconds; });
+    var yMax = Math.max.apply(null,secs), yMin = Math.min.apply(null,secs);
+    if(yMax===yMin){ yMax+=1; yMin=Math.max(0,yMin-1); }
+    else { var pad=(yMax-yMin)*0.15; yMax+=pad; yMin=Math.max(0,yMin-pad); }
 
-    chartInstance = new Chart(canvas.getContext('2d'), {
-      type:'line',
-      data:{ labels:labels, datasets:[{
-        data:data, borderColor:'#3f6b66', backgroundColor:'#b45a52',
-        pointBackgroundColor:'#b45a52', pointRadius:4, tension:.25, borderWidth:2
-      }]},
-      options:{
-        plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label:function(ctx){ return secToDisplay(ctx.parsed.y); } } } },
-        scales:{
-          y:{ ticks:{ callback:function(v){ return secToDisplay(v); }, font:{size:10} }, grid:{color:'rgba(38,52,58,.08)'} },
-          x:{ ticks:{ font:{size:10} }, grid:{display:false} }
-        }
-      }
-    });
+    function xAt(i){ return list.length===1 ? padL+plotW/2 : padL + i*(plotW/(list.length-1)); }
+    function yAt(v){ return padT + (yMax-v)/(yMax-yMin)*plotH; }
+
+    var gridSvg='', yLabelSvg='';
+    var ticks=3;
+    for(var t=0;t<=ticks;t++){
+      var v = yMin + (yMax-yMin)*t/ticks;
+      var y = yAt(v);
+      gridSvg += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#26343a" stroke-opacity="0.08" stroke-width="0.6"/>';
+      yLabelSvg += '<text x="'+(padL-5)+'" y="'+(y+2.6).toFixed(1)+'" text-anchor="end" font-size="6.5" fill="#5c6b64" font-family="Noto Sans TC, sans-serif">'+secToDisplay(v)+'</text>';
+    }
+
+    var pathD = list.map(function(r,i){ return (i===0?'M':'L')+xAt(i).toFixed(1)+','+yAt(r.seconds).toFixed(1); }).join(' ');
+    var dotsSvg = list.map(function(r,i){
+      return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(r.seconds).toFixed(1)+'" r="3.2" fill="#b45a52"><title>'+r.date+' '+secToDisplay(r.seconds)+'</title></circle>';
+    }).join('');
+    var xLabelSvg = list.map(function(r,i){
+      var show = list.length<=5 || i===0 || i===list.length-1 || i===Math.floor((list.length-1)/2);
+      if(!show) return '';
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="6.5" fill="#5c6b64" font-family="Noto Sans TC, sans-serif">'+r.date.slice(5)+'</text>';
+    }).join('');
+
+    svg.innerHTML = gridSvg + yLabelSvg
+      + '<path d="'+pathD+'" fill="none" stroke="#3f6b66" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
+      + dotsSvg + xLabelSvg;
 
     // delta badge: compare gap-to-PB between the two most recent swims
     var pb = computePB(chartStroke, chartDist);
