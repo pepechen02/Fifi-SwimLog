@@ -152,7 +152,10 @@
   .record-card .meta{display:flex; flex-wrap:wrap; gap:8px; row-gap:8px; font-size:10.5px; font-weight:600; color:var(--ink);}
   .record-card .meta span{background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 8px;}
   .record-card .time-wrap{display:flex; flex-direction:column; align-items:flex-end;}
-  .record-card .rank-label{font-size:11px; font-weight:600; color:var(--ink); margin-bottom:3px;}
+  .record-card .rank-label{
+    display:inline-block; font-size:10.5px; font-weight:700; color:#fff; border-radius:10px;
+    padding:2px 9px; margin-bottom:5px;
+  }
   .record-card .time-big{font-size:18px; font-weight:700; color:var(--ink); text-align:right;}
   .record-card .row2{display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;}
   .no-records{text-align:center; font-weight:600; color:var(--ink); padding:24px; }
@@ -660,7 +663,7 @@
     }
     wrap.innerHTML = list.map(function(r){
       var color = STROKE_COLOR[r.stroke] || 'var(--blue)';
-      var rankLabel = r.rank ? '<div class="rank-label">名次 '+r.rank+'</div>' : '';
+      var rankLabel = r.rank ? '<div class="rank-label" style="background:'+color+'">第 '+r.rank+' 名</div>' : '';
       return '<div class="record-card pop-card">'
         + '<div class="row1">'
         +   '<span class="date">'+r.date+'</span>'
