@@ -157,13 +157,7 @@
   .record-card .rank-label{font-size:12.5px; font-weight:800; color:#e8632b; margin-bottom:3px;}
   .record-card{cursor:pointer;}
   .record-card:active{background:var(--paper);}
-  .del-icon{
-    width:22px; height:22px; border-radius:50%; display:inline-flex; flex-shrink:0;
-    align-items:center; justify-content:center; border:1px solid var(--line);
-    background:var(--card); color:#c0392b; cursor:pointer; font-size:11px;
-  }
-  .del-icon:active{background:#fbeceb;}
-  .record-card .time-big{font-size:18px; font-weight:700; color:var(--ink); text-align:right;}
+  .record-card .time-big{font-size:18px; font-weight:700; color:var(--blue); text-align:right;}
   .record-card .row2{display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;}
   .no-records{text-align:center; font-weight:600; color:var(--ink); padding:24px; }
 
@@ -328,7 +322,7 @@
     <!-- FULL RECORDS -->
     <section class="view" id="view-records">
       <h2 class="section-title">全紀錄查詢</h2>
-      <p class="section-hint">點卡片可修改該筆紀錄，右上角 ✕ 可刪除。</p>
+      <p class="section-hint">點卡片可修改該筆紀錄。</p>
       <div class="filter-wrap">
         <select class="filter" id="rf-stroke"><option value="">項目：全部</option><option>自由式</option><option>仰式</option><option>蛙式</option><option>蝶式</option><option>混合式</option><option>接力</option></select>
         <select class="filter" id="rf-distance"><option value="">距離：全部</option><option value="50">50m</option><option value="100">100m</option><option value="200">200m</option></select>
@@ -737,10 +731,7 @@
       return '<div class="record-card pop-card" onclick="editRecord(\''+r.id+'\')">'
         + '<div class="row1">'
         +   '<span class="date">'+r.date+'</span>'
-        +   '<span style="display:flex;align-items:center;gap:8px;">'
-        +     '<span class="tag" style="background:'+color+'">'+r.stroke+' '+r.distance+'m</span>'
-        +     '<span class="del-icon" onclick="event.stopPropagation();deleteRecord(\''+r.id+'\')" aria-label="刪除">✕</span>'
-        +   '</span>'
+        +   '<span class="tag" style="background:'+color+'">'+r.stroke+' '+r.distance+'m</span>'
         + '</div>'
         + '<div class="compname">'+r.compName+'</div>'
         + '<div class="meta"><span>'+r.team+'</span><span>'+r.ageGroup+'</span><span>'+r.diveType+'</span><span>'+r.poolType+'</span></div>'
