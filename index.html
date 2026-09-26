@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>FIFI的海女比賽紀錄</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="海女紀錄">
+<meta name="theme-color" content="#2c4d49">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c4d49'/%3E%3Cpath d='M8 40 Q16 32 24 40 T40 40 T56 40' stroke='%23eef0e5' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M8 48 Q16 40 24 48 T40 48 T56 48' stroke='%23cdbb8e' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='20' r='7' fill='%23eef0e5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Liu+Jian+Mao+Cao&family=Noto+Serif+TC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#26343a; --ink-soft:#5c6b64; --paper:#eef0e5; --card:#f8f7f0;
+    --sea:#3f6b66; --sea-deep:#2c4d49; --sand:#cdbb8e; --coral:#b45a52;
+    --line: rgba(38,52,58,.16); --good:#4d7c5f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Noto Sans TC',sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    overflow-x:hidden;
+  }
+  .app{max-width:560px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
+
+  /* Header */
+  header{
+    padding:22px 20px 14px; position:relative;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg, var(--paper), var(--paper) 85%, transparent);
+  }
+  header h1{
+    font-family:'Liu Jian Mao Cao', cursive; font-weight:400;
+    font-size:34px; margin:0; color:var(--sea-deep); line-height:1.1;
+    letter-spacing:1px;
+  }
+  header p.sub{margin:4px 0 0; font-family:'Noto Serif TC',serif; font-size:12px; color:var(--ink-soft); letter-spacing:2px;}
+  .wave-rule{margin-top:10px; width:64px; height:8px;}
+  .gear-btn{
+    position:absolute; top:22px; right:18px; width:34px; height:34px; border-radius:50%;
+    border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); cursor:pointer;
+  }
+  .gear-btn:active{background:var(--sand);}
+
+  /* Settings panel */
+  .settings{
+    display:none; padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line);
+  }
+  .settings.open{display:block;}
+  .settings label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:6px;}
+  .settings input[type=text]{
+    width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:6px; background:#fff;
+    font-family:monospace; font-size:12px; color:var(--ink);
+  }
+  .settings .row{display:flex; gap:8px; margin-top:10px;}
+  .status-dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--sand);}
+  .status-dot.on{background:var(--good);}
+  .status-dot.off{background:var(--coral);}
+  .status-line{font-size:12px; color:var(--ink-soft); margin-top:8px;}
+
+  main{flex:1; padding:18px 20px 100px;}
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  h2.section-title{
+    font-family:'Noto Serif TC',serif; font-weight:600; font-size:18px; margin:0 0 4px;
+    color:var(--sea-deep);
+  }
+  p.section-hint{font-size:12.5px; color:var(--ink-soft); margin:0 0 16px;}
+
+  /* Form */
+  .field{margin-bottom:18px;}
+  .field > label{
+    display:block; font-family:'Noto Serif TC',serif; font-size:13px; font-weight:600;
+    color:var(--ink); margin-bottom:8px;
+  }
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    padding:8px 14px; border:1px solid var(--line); border-radius:20px; background:var(--card);
+    font-size:13.5px; color:var(--ink-soft); cursor:pointer; user-select:none; transition:.15s;
+  }
+  .chip.sel{background:var(--sea); border-color:var(--sea); color:#fff;}
+  .chip.sel.alt{background:var(--coral); border-color:var(--coral);}
+  input[type=date], input[type=text].txt{
+    width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; font-size:15px; color:var(--ink); font-family:'Noto Sans TC',sans-serif;
+  }
+  .time-row{display:flex; align-items:center; gap:6px;}
+  .time-row input{
+    width:64px; text-align:center; padding:11px 6px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; font-size:16px; color:var(--ink); font-variant-numeric:tabular-nums;
+  }
+  .time-row span{color:var(--ink-soft); font-size:13px;}
+  .distance-wrap{margin-top:10px; display:none;}
+  .distance-wrap.show{display:block;}
+
+  .submit-btn{
+    width:100%; padding:14px; margin-top:6px; border:none; border-radius:10px;
+    background:var(--sea-deep); color:#fff; font-size:15.5px; font-family:'Noto Serif TC',serif;
+    font-weight:600; letter-spacing:2px; cursor:pointer;
+  }
+  .submit-btn:active{background:var(--sea);}
+  .toast{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(10px);
+    background:var(--sea-deep); color:#fff; padding:10px 20px; border-radius:20px; font-size:13.5px;
+    opacity:0; transition:.25s; pointer-events:none; z-index:50; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* PB table */
+  .pb-group{margin-bottom:20px;}
+  .pb-group h3{
+    font-family:'Noto Serif TC',serif; font-size:14.5px; color:var(--sea-deep); margin:0 0 8px;
+    border-bottom:1px dashed var(--sand); padding-bottom:6px;
+  }
+  table.pb{width:100%; border-collapse:collapse; font-size:13px;}
+  table.pb td, table.pb th{padding:8px 6px; text-align:left; border-bottom:1px solid var(--line);}
+  table.pb th{color:var(--ink-soft); font-weight:500; font-size:11.5px;}
+  table.pb td.time{font-variant-numeric:tabular-nums; color:var(--sea-deep); font-weight:600;}
+  table.pb td.empty{color:var(--ink-soft); font-style:italic;}
+
+  /* Chart view */
+  .stroke-tabs{display:flex; gap:8px; margin-bottom:10px;}
+  .stroke-tabs .chip{flex:1; text-align:center;}
+  .dist-tabs{display:flex; gap:8px; margin-bottom:16px;}
+  .dist-tabs .chip{flex:1; text-align:center; padding:6px 10px; border-radius:8px;}
+  .chart-card{
+    background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 10px 6px;
+  }
+  .delta-badge{
+    display:flex; align-items:center; gap:8px; margin:14px 2px 0; font-size:13.5px; color:var(--ink-soft);
+  }
+  .delta-badge .arrow{font-size:16px;}
+  .delta-badge .arrow.down{color:var(--good);}
+  .delta-badge .arrow.up{color:var(--coral);}
+  .empty-note{
+    text-align:center; color:var(--ink-soft); font-size:13px; padding:30px 10px; font-family:'Noto Serif TC',serif;
+  }
+
+  /* Filters + records table */
+  .filter-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  select.filter{
+    padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#fff;
+    font-size:12.5px; color:var(--ink); font-family:'Noto Sans TC',sans-serif;
+  }
+  .records-scroll{overflow-x:auto; border:1px solid var(--line); border-radius:10px;}
+  table.rec{width:100%; border-collapse:collapse; font-size:12px; min-width:640px;}
+  table.rec th{
+    background:var(--sea-deep); color:#f4efe4; padding:9px 8px; text-align:left; font-weight:500;
+    position:sticky; top:0;
+  }
+  table.rec td{padding:8px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  table.rec tr:nth-child(even){background:rgba(205,187,142,.14);}
+  table.rec td.time{font-weight:600; color:var(--sea-deep); font-variant-numeric:tabular-nums;}
+
+  /* Bottom nav */
+  nav.tabbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    display:flex; max-width:560px; margin:0 auto; width:100%;
+    background:var(--card); border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  nav.tabbar button{
+    flex:1; background:none; border:none; padding:10px 4px 8px; display:flex; flex-direction:column;
+    align-items:center; gap:3px; color:var(--ink-soft); cursor:pointer; font-family:'Noto Sans TC',sans-serif;
+  }
+  nav.tabbar button svg{width:20px; height:20px;}
+  nav.tabbar button span{font-size:10.5px;}
+  nav.tabbar button.active{color:var(--sea-deep);}
+  nav.tabbar button.active svg{stroke:var(--coral);}
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1c2422; --card:#232d2a; --ink:#e9e6da; --ink-soft:#a7ab9e; --line:rgba(233,230,218,.14);
+    }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <button class="gear-btn" id="gearBtn" aria-label="設定">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <h1>FIFI的海女比賽紀錄</h1>
+    <p class="sub">SWIM MEET LOG · 泳道上的每一秒</p>
+    <svg class="wave-rule" viewBox="0 0 64 8"><path d="M0 4 Q8 0 16 4 T32 4 T48 4 T64 4" stroke="#b45a52" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+  </header>
+
+  <div class="settings" id="settingsPanel">
+    <label>Google Sheet 連結網址（Apps Script Web App URL）</label>
+    <input type="text" id="apiUrlInput" placeholder="https://script.google.com/macros/s/xxxx/exec">
+    <div class="row">
+      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;" id="saveApiBtn">儲存</button>
+      <button class="submit-btn" style="margin-top:0;flex:1;padding:10px;font-size:13px;background:var(--sea);" id="syncBtn">🔄 從雲端同步</button>
+    </div>
+    <div class="status-line"><span class="status-dot" id="statusDot"></span><span id="statusText">尚未連接雲端試算表，目前僅儲存在本機瀏覽器</span></div>
+  </div>
+
+  <main>
+
+    <!-- ADD RECORD -->
+    <section class="view active" id="view-add">
+      <h2 class="section-title">新增紀錄</h2>
+      <p class="section-hint">紀錄下這一次下水的每一秒。</p>
+
+      <div class="field">
+        <label>比賽日期</label>
+        <input type="date" id="f-date" class="txt">
+      </div>
+
+      <div class="field">
+        <label>比賽名稱</label>
+        <input type="text" id="f-compName" class="txt" placeholder="例：113學年度全國分齡游泳錦標賽">
+      </div>
+
+      <div class="field">
+        <label>泳隊名稱</label>
+        <div class="chips" id="f-team">
+          <div class="chip sel" data-v="裕德泳隊">裕德泳隊</div>
+          <div class="chip" data-v="鬍子泳隊">鬍子泳隊</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>比賽歲級</label>
+        <div class="chips" id="f-age">
+          <div class="chip" data-v="中年級">中年級</div>
+          <div class="chip" data-v="高年級">高年級</div>
+          <div class="chip" data-v="10歲級以下">10歲級以下</div>
+          <div class="chip sel" data-v="11至12歲級">11至12歲級</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>比賽項目</label>
+        <div class="chips" id="f-stroke">
+          <div class="chip" data-v="自由式">自由式</div>
+          <div class="chip" data-v="仰式">仰式</div>
+          <div class="chip" data-v="蛙式">蛙式</div>
+          <div class="chip" data-v="蝶式">蝶式</div>
+          <div class="chip" data-v="混合式">混合式</div>
+          <div class="chip" data-v="接力">接力</div>
+        </div>
+        <div class="distance-wrap" id="distWrap">
+          <div class="chips" id="f-distance">
+            <div class="chip" data-v="50">50 公尺</div>
+            <div class="chip" data-v="100">100 公尺</div>
+            <div class="chip" data-v="200">200 公尺</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>成績秒數</label>
+        <div class="time-row">
+          <input type="number" id="f-min" min="0" placeholder="0"><span>分</span>
+          <input type="number" id="f-sec" min="0" max="59" placeholder="00"><span>秒</span>
+          <input type="number" id="f-hun" min="0" max="99" placeholder="00"><span>百分秒</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>出發方式</label>
+        <div class="chips" id="f-dive">
+          <div class="chip" data-v="無跳水">無跳水</div>
+          <div class="chip" data-v="平台出發">平台出發</div>
+          <div class="chip" data-v="跳水台(舊式)">跳水台(舊式)</div>
+          <div class="chip sel" data-v="跳水台(新式)">跳水台(新式)</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>泳池規格</label>
+        <div class="chips" id="f-pool">
+          <div class="chip sel" data-v="長池">長池</div>
+          <div class="chip" data-v="短池">短池</div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submitBtn">送出紀錄</button>
+    </section>
+
+    <!-- PB -->
+    <section class="view" id="view-pb">
+      <h2 class="section-title">個人最佳 PB</h2>
+      <p class="section-hint">每個項目、每個距離目前最快的一次。</p>
+      <div id="pbContainer"></div>
+    </section>
+
+    <!-- CHART -->
+    <section class="view" id="view-chart">
+      <h2 class="section-title">成長曲線</h2>
+      <p class="section-hint">日期為橫軸，秒數為縱軸，越往下代表越快。</p>
+      <div class="stroke-tabs" id="chartStrokeTabs">
+        <div class="chip sel" data-v="自由式">自由式</div>
+        <div class="chip" data-v="仰式">仰式</div>
+        <div class="chip" data-v="蛙式">蛙式</div>
+        <div class="chip" data-v="蝶式">蝶式</div>
+      </div>
+      <div class="dist-tabs" id="chartDistTabs">
+        <div class="chip sel" data-v="50">50m</div>
+        <div class="chip" data-v="100">100m</div>
+        <div class="chip" data-v="200">200m</div>
+      </div>
+      <div class="chart-card">
+        <canvas id="growthChart" height="220"></canvas>
+      </div>
+      <div class="delta-badge" id="deltaBadge"></div>
+    </section>
+
+    <!-- FULL RECORDS -->
+    <section class="view" id="view-records">
+      <h2 class="section-title">全紀錄查詢</h2>
+      <p class="section-hint">完整比賽軌跡，可依條件篩選。</p>
+      <div class="filter-wrap">
+        <select class="filter" id="rf-stroke"><option value="">項目：全部</option><option>自由式</option><option>仰式</option><option>蛙式</option><option>蝶式</option><option>混合式</option><option>接力</option></select>
+        <select class="filter" id="rf-distance"><option value="">距離：全部</option><option value="50">50m</option><option value="100">100m</option><option value="200">200m</option></select>
+        <select class="filter" id="rf-team"><option value="">泳隊：全部</option><option>裕德泳隊</option><option>鬍子泳隊</option></select>
+        <select class="filter" id="rf-age"><option value="">歲級：全部</option><option>中年級</option><option>高年級</option><option>10歲級以下</option><option>11至12歲級</option></select>
+      </div>
+      <div class="records-scroll">
+        <table class="rec">
+          <thead><tr><th>日期</th><th>比賽名稱</th><th>泳隊</th><th>歲級</th><th>項目</th><th>出發方式</th><th>泳池</th><th>秒數</th></tr></thead>
+          <tbody id="recordsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="tabbar">
+    <button class="active" data-view="view-add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <span>新增紀錄</span>
+    </button>
+    <button data-view="view-pb">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="5"/><path d="M8.5 13 7 22l5-3 5 3-1.5-9"/></svg>
+      <span>個人最佳</span>
+    </button>
+    <button data-view="view-chart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17 9 11 13 15 21 6"/><path d="M3 21h18"/></svg>
+      <span>成長曲線</span>
+    </button>
+    <button data-view="view-records">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <span>全紀錄</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CONFIG_KEY = 'fifi_swim_config_v1';
+  var CACHE_KEY  = 'fifi_swim_records_v1';
+  var STROKES4 = ['自由式','仰式','蛙式','蝶式'];
+  var STROKES_PB = ['自由式','仰式','蛙式','蝶式','混合式'];
+  var DISTANCES = ['50','100','200'];
+
+  var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
+  var records = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
+
+  var chartStroke = '自由式', chartDist = '50';
+  var chartInstance = null;
+
+  // ---------- helpers ----------
+  function $(id){ return document.getElementById(id); }
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+  function pad(n){ return (n<10?'0':'')+n; }
+  function secToDisplay(sec){
+    if(sec == null || isNaN(sec)) return '—';
+    var m = Math.floor(sec/60);
+    var s = sec - m*60;
+    var whole = Math.floor(s);
+    var hund = Math.round((s-whole)*100);
+    if(hund===100){ whole+=1; hund=0; }
+    if(m>0) return m+':'+pad(whole)+'.'+pad(hund);
+    return whole+'.'+pad(hund);
+  }
+  function saveCache(){ localStorage.setItem(CACHE_KEY, JSON.stringify(records)); }
+  function saveConfig(){ localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
+  function uid(){ return 'r'+Date.now()+Math.random().toString(36).slice(2,7); }
+
+  // ---------- chip groups ----------
+  function chipGroup(containerId, onChange, multi){
+    var el = document.getElementById(containerId);
+    el.addEventListener('click', function(e){
+      var chip = e.target.closest('.chip');
+      if(!chip) return;
+      Array.prototype.forEach.call(el.children, function(c){ c.classList.remove('sel'); });
+      chip.classList.add('sel');
+      if(onChange) onChange(chip.getAttribute('data-v'));
+    });
+  }
+  function selectedValue(containerId){
+    var el = document.getElementById(containerId);
+    var sel = el.querySelector('.chip.sel');
+    return sel ? sel.getAttribute('data-v') : null;
+  }
+
+  chipGroup('f-team'); chipGroup('f-age'); chipGroup('f-dive'); chipGroup('f-pool');
+  chipGroup('f-distance');
+  chipGroup('f-stroke', function(v){
+    $('distWrap').classList.add('show');
+  });
+
+  // ---------- settings ----------
+  $('gearBtn').addEventListener('click', function(){
+    $('settingsPanel').classList.toggle('open');
+  });
+  $('apiUrlInput').value = config.apiUrl || '';
+  updateStatus();
+  function updateStatus(){
+    var dot = $('statusDot'), txt = $('statusText');
+    if(config.apiUrl){
+      dot.className = 'status-dot on';
+      txt.textContent = '已連接雲端試算表，資料會同步寫入 Google Sheet';
+    } else {
+      dot.className = 'status-dot off';
+      txt.textContent = '尚未連接雲端試算表，目前僅儲存在本機瀏覽器';
+    }
+  }
+  $('saveApiBtn').addEventListener('click', function(){
+    config.apiUrl = $('apiUrlInput').value.trim();
+    saveConfig(); updateStatus();
+    toast('設定已儲存');
+  });
+  $('syncBtn').addEventListener('click', function(){ fetchCloud(true); });
+
+  function fetchCloud(manual){
+    if(!config.apiUrl){ if(manual) toast('請先貼上 Google Sheet 網址'); return; }
+    if(manual) toast('同步中…');
+    fetch(config.apiUrl, {method:'GET'})
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(Array.isArray(data)){
+          records = data.map(function(d){
+            return {
+              id: d.id, date: d.date, compName: d.compName, team: d.team, ageGroup: d.ageGroup,
+              stroke: d.stroke, distance: String(d.distance), diveType: d.diveType,
+              poolType: d.poolType, seconds: parseFloat(d.seconds)
+            };
+          });
+          saveCache();
+          renderAll();
+          if(manual) toast('已從雲端同步 '+records.length+' 筆紀錄');
+        }
+      })
+      .catch(function(){ if(manual) toast('同步失敗，請確認網址是否正確'); });
+  }
+
+  // ---------- submit ----------
+  $('submitBtn').addEventListener('click', function(){
+    var date = $('f-date').value;
+    var compName = $('f-compName').value.trim();
+    var team = selectedValue('f-team');
+    var ageGroup = selectedValue('f-age');
+    var stroke = selectedValue('f-stroke');
+    var distance = selectedValue('f-distance');
+    var diveType = selectedValue('f-dive');
+    var poolType = selectedValue('f-pool');
+    var min = parseInt($('f-min').value)||0;
+    var sec = parseInt($('f-sec').value)||0;
+    var hun = parseInt($('f-hun').value)||0;
+
+    if(!date){ toast('請選擇比賽日期'); return; }
+    if(!compName){ toast('請輸入比賽名稱'); return; }
+    if(!stroke){ toast('請選擇比賽項目'); return; }
+    if(!distance){ toast('請選擇公尺數'); return; }
+    var seconds = min*60 + sec + hun/100;
+    if(seconds<=0){ toast('請輸入成績秒數'); return; }
+
+    var rec = {
+      id: uid(), date: date, compName: compName, team: team, ageGroup: ageGroup,
+      stroke: stroke, distance: distance, diveType: diveType, poolType: poolType, seconds: seconds
+    };
+    records.push(rec);
+    saveCache();
+    renderAll();
+    toast('已記錄：'+stroke+' '+distance+'m '+secToDisplay(seconds));
+
+    if(config.apiUrl){
+      fetch(config.apiUrl, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(rec)
+      }).catch(function(){ toast('已存本機，但雲端寫入失敗'); });
+    }
+
+    // reset a few fields for the next entry
+    $('f-min').value=''; $('f-sec').value=''; $('f-hun').value='';
+  });
+
+  // ---------- PB ----------
+  function computePB(stroke, distance){
+    var list = records.filter(function(r){ return r.stroke===stroke && r.distance===distance; });
+    if(!list.length) return null;
+    return list.reduce(function(best,r){ return (!best || r.seconds<best.seconds) ? r : best; }, null);
+  }
+  function renderPB(){
+    var wrap = $('pbContainer');
+    wrap.innerHTML = '';
+    STROKES_PB.forEach(function(stroke){
+      var group = document.createElement('div');
+      group.className = 'pb-group';
+      var h = document.createElement('h3'); h.textContent = stroke; group.appendChild(h);
+      var table = document.createElement('table'); table.className='pb';
+      table.innerHTML = '<thead><tr><th>公尺</th><th>秒數</th><th>日期</th><th>比賽名稱</th></tr></thead>';
+      var tbody = document.createElement('tbody');
+      DISTANCES.forEach(function(d){
+        var pb = computePB(stroke, d);
+        var tr = document.createElement('tr');
+        if(pb){
+          tr.innerHTML = '<td>'+d+'m</td><td class="time">'+secToDisplay(pb.seconds)+'</td><td>'+pb.date+'</td><td>'+pb.compName+'</td>';
+        } else {
+          tr.innerHTML = '<td>'+d+'m</td><td class="empty" colspan="3">尚無紀錄</td>';
+        }
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      group.appendChild(table);
+      wrap.appendChild(group);
+    });
+  }
+
+  // ---------- Chart ----------
+  chipGroup('chartStrokeTabs', function(v){ chartStroke=v; renderChart(); });
+  chipGroup('chartDistTabs', function(v){ chartDist=v; renderChart(); });
+
+  function renderChart(){
+    var list = records.filter(function(r){ return r.stroke===chartStroke && r.distance===chartDist; })
+                       .sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var canvas = $('growthChart');
+    var badge = $('deltaBadge');
+
+    if(chartInstance){ chartInstance.destroy(); chartInstance=null; }
+
+    if(list.length===0){
+      canvas.style.display='none';
+      badge.innerHTML = '<div class="empty-note">'+chartStroke+' '+chartDist+'m 尚無紀錄，新增第一筆吧。</div>';
+      return;
+    }
+    canvas.style.display='block';
+
+    var labels = list.map(function(r){ return r.date; });
+    var data = list.map(function(r){ return r.seconds; });
+
+    chartInstance = new Chart(canvas.getContext('2d'), {
+      type:'line',
+      data:{ labels:labels, datasets:[{
+        data:data, borderColor:'#3f6b66', backgroundColor:'#b45a52',
+        pointBackgroundColor:'#b45a52', pointRadius:4, tension:.25, borderWidth:2
+      }]},
+      options:{
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label:function(ctx){ return secToDisplay(ctx.parsed.y); } } } },
+        scales:{
+          y:{ ticks:{ callback:function(v){ return secToDisplay(v); }, font:{size:10} }, grid:{color:'rgba(38,52,58,.08)'} },
+          x:{ ticks:{ font:{size:10} }, grid:{display:false} }
+        }
+      }
+    });
+
+    // delta badge: compare gap-to-PB between the two most recent swims
+    var pb = computePB(chartStroke, chartDist);
+    if(list.length<2 || !pb){
+      badge.innerHTML = '';
+      return;
+    }
+    var latest = list[list.length-1], prev = list[list.length-2];
+    var gapLatest = latest.seconds - pb.seconds;
+    var gapPrev = prev.seconds - pb.seconds;
+    var diff = gapPrev - gapLatest; // positive = getting closer to PB (improving)
+    var html;
+    if(gapLatest===0){
+      html = '<span class="arrow down">🏅</span> 這是目前的最佳成績！';
+    } else if(diff > 0.001){
+      html = '<span class="arrow down">▼</span> 與 PB 的差距縮小了 '+diff.toFixed(2)+' 秒';
+    } else if(diff < -0.001){
+      html = '<span class="arrow up">▲</span> 與 PB 的差距拉大了 '+Math.abs(diff).toFixed(2)+' 秒';
+    } else {
+      html = '與上一次差距持平';
+    }
+    badge.innerHTML = html;
+  }
+
+  // ---------- Full records ----------
+  ['rf-stroke','rf-distance','rf-team','rf-age'].forEach(function(id){
+    $(id).addEventListener('change', renderRecords);
+  });
+  function renderRecords(){
+    var fs = $('rf-stroke').value, fd = $('rf-distance').value, ft = $('rf-team').value, fa = $('rf-age').value;
+    var list = records.filter(function(r){
+      return (!fs || r.stroke===fs) && (!fd || r.distance===fd) && (!ft || r.team===ft) && (!fa || r.ageGroup===fa);
+    }).sort(function(a,b){ return b.date.localeCompare(a.date); });
+
+    var body = $('recordsBody');
+    if(!list.length){
+      body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);padding:20px;">沒有符合條件的紀錄</td></tr>';
+      return;
+    }
+    body.innerHTML = list.map(function(r){
+      return '<tr><td>'+r.date+'</td><td>'+r.compName+'</td><td>'+r.team+'</td><td>'+r.ageGroup+'</td>'
+        +'<td>'+r.stroke+' '+r.distance+'m</td><td>'+r.diveType+'</td><td>'+r.poolType+'</td>'
+        +'<td class="time">'+secToDisplay(r.seconds)+'</td></tr>';
+    }).join('');
+  }
+
+  function renderAll(){ renderPB(); renderChart(); renderRecords(); }
+
+  // ---------- tab nav ----------
+  document.querySelectorAll('nav.tabbar button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('nav.tabbar button').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('section.view').forEach(function(s){ s.classList.remove('active'); });
+      btn.classList.add('active');
+      $(btn.getAttribute('data-view')).classList.add('active');
+    });
+  });
+
+  // ---------- init ----------
+  $('f-date').valueAsDate = new Date();
+  renderAll();
+  if(config.apiUrl){ fetchCloud(false); }
+
+})();
+</script>
+</body>
+</html>
