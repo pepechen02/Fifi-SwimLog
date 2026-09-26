@@ -42,6 +42,12 @@
     font-size:12.5px; font-weight:600;
   }
   .gear-btn:active{ background:var(--paper); }
+  .refresh-btn{
+    position:absolute; top:22px; right:78px; padding:7px 12px; border-radius:16px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer;
+    font-size:12.5px; font-weight:600;
+  }
+  .refresh-btn:active{ background:var(--paper); }
 
   /* Settings panel */
   .settings{ display:none; padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
@@ -137,7 +143,8 @@
   .empty-note{ text-align:center; color:var(--ink); font-weight:600; font-size:13.5px; padding:30px 10px; }
 
   /* Filters + record cards */
-  .filter-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .filter-wrap{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;}
+  .records-summary{font-size:12.5px; font-weight:700; color:var(--ink); margin:0 2px 14px; text-align:right;}
   select.filter{
     padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:#fff;
     font-size:13px; font-weight:600; color:var(--ink);
@@ -152,7 +159,10 @@
   .record-card .meta{display:flex; flex-wrap:wrap; gap:8px; row-gap:8px; font-size:10.5px; font-weight:600; color:var(--ink);}
   .record-card .meta span{background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 8px;}
   .record-card .time-wrap{display:flex; flex-direction:column; align-items:flex-end;}
-  .record-card .rank-label{font-size:11px; font-weight:600; color:var(--ink); margin-bottom:3px;}
+  .record-card .rank-label{font-size:12.5px; font-weight:800; color:#e8632b; margin-bottom:3px;}
+  .record-card .row3{display:flex; gap:8px; margin-top:12px; justify-content:flex-end;}
+  .mini-btn{font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer;}
+  .mini-btn.danger{color:#c0392b; border-color:rgba(192,57,43,.35);}
   .record-card .time-big{font-size:18px; font-weight:700; color:var(--ink); text-align:right;}
   .record-card .row2{display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;}
   .no-records{text-align:center; font-weight:600; color:var(--ink); padding:24px; }
@@ -179,6 +189,7 @@
 <div class="app">
 
   <header>
+    <button class="refresh-btn" id="refreshBtn" aria-label="重新整理">↻ 重新整理</button>
     <button class="gear-btn" id="gearBtn" aria-label="設定">設定</button>
     <h1>FIFI的海女比賽紀錄</h1>
     <p class="sub">SWIM MEET LOG · 泳道上的每一秒</p>
@@ -282,6 +293,7 @@
       </div>
 
       <button class="submit-btn" id="submitBtn">送出紀錄</button>
+      <button class="submit-btn" id="cancelEditBtn" style="display:none;margin-top:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none;">取消編輯</button>
     </section>
 
     <!-- PB -->
@@ -307,6 +319,7 @@
         <div class="chip" data-v="100">100m</div>
         <div class="chip" data-v="200">200m</div>
       </div>
+      <div class="stroke-tabs" id="chartYearTabs" style="margin-bottom:16px;"></div>
       <div class="chart-card pop-card">
         <svg id="growthChart" viewBox="0 0 300 180" style="width:100%;height:auto;display:block;"></svg>
       </div>
@@ -321,6 +334,7 @@
         <select class="filter" id="rf-stroke"><option value="">項目：全部</option><option>自由式</option><option>仰式</option><option>蛙式</option><option>蝶式</option><option>混合式</option><option>接力</option></select>
         <select class="filter" id="rf-distance"><option value="">距離：全部</option><option value="50">50m</option><option value="100">100m</option><option value="200">200m</option></select>
       </div>
+      <div class="records-summary" id="recordsSummary"></div>
       <div id="recordsCards"></div>
     </section>
 
@@ -366,7 +380,8 @@
   var config = JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}');
   var records = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
 
-  var chartStroke = '自由式', chartDist = '50';
+  var chartStroke = '自由式', chartDist = '50', chartYear = '';
+  var editingId = null;
 
   // ---------- helpers ----------
   function $(id){ return document.getElementById(id); }
@@ -388,6 +403,19 @@
   function saveCache(){ localStorage.setItem(CACHE_KEY, JSON.stringify(records)); }
   function saveConfig(){ localStorage.setItem(CONFIG_KEY, JSON.stringify(config)); }
   function uid(){ return 'r'+Date.now()+Math.random().toString(36).slice(2,7); }
+  function normalizeDate(v){
+    v = (v==null?'':v).toString();
+    if(v.indexOf('T') !== -1){
+      var dt = new Date(v);
+      if(!isNaN(dt.getTime())){ return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate()); }
+    }
+    return v.slice(0,10);
+  }
+  function fmtDateSlash(d){
+    var p = (d||'').split('-');
+    if(p.length<3) return d||'';
+    return p[0]+'/'+parseInt(p[1],10)+'/'+parseInt(p[2],10);
+  }
 
   // ---------- chip groups ----------
   function chipGroup(containerId, onChange){
@@ -444,6 +472,10 @@
     toast('設定已儲存');
   });
   $('syncBtn').addEventListener('click', function(){ fetchCloud(true); });
+  $('refreshBtn').addEventListener('click', function(){
+    if(config.apiUrl){ fetchCloud(true); }
+    else { renderAll(); toast('已重新整理'); }
+  });
 
   function fetchCloud(manual){
     if(!config.apiUrl){ if(manual) toast('請先貼上 Google Sheet 網址'); return; }
@@ -454,7 +486,7 @@
         if(Array.isArray(data)){
           records = data.map(function(d){
             return {
-              id: d.id, date: (d.date||'').toString().slice(0,10), compName: d.compName, team: d.team, ageGroup: d.ageGroup,
+              id: d.id, date: normalizeDate(d.date), compName: d.compName, team: d.team, ageGroup: d.ageGroup,
               stroke: d.stroke, distance: String(d.distance), diveType: d.diveType,
               poolType: d.poolType, seconds: parseFloat(d.seconds), rank: d.rank || ''
             };
@@ -490,6 +522,9 @@
     clearChipGroup('f-stroke');
     clearChipGroup('f-distance');
     $('distWrap').classList.remove('show');
+    editingId = null;
+    $('submitBtn').textContent = '送出紀錄';
+    $('cancelEditBtn').style.display = 'none';
   }
 
   $('submitBtn').addEventListener('click', function(){
@@ -514,6 +549,28 @@
     if(!distance){ toast('請點選公尺數（50/100/200）'); markError('field-stroke'); return; }
     var seconds = min*60 + sec + hun/100;
     if(seconds<=0){ toast('請輸入成績秒數'); markError('field-time'); return; }
+
+    if(editingId){
+      var idx = records.findIndex(function(x){ return x.id===editingId; });
+      if(idx>-1){
+        records[idx] = {
+          id: editingId, date: date, compName: compName, team: team, ageGroup: ageGroup,
+          stroke: stroke, distance: distance, diveType: diveType, poolType: poolType, seconds: seconds, rank: rank
+        };
+        saveCache();
+        renderAll();
+        toast('已更新紀錄');
+        if(config.apiUrl){
+          fetch(config.apiUrl, {
+            method:'POST',
+            headers:{'Content-Type':'text/plain;charset=utf-8'},
+            body: JSON.stringify({action:'update', id:editingId, date:date, compName:compName, team:team, ageGroup:ageGroup, stroke:stroke, distance:distance, diveType:diveType, poolType:poolType, seconds:seconds, rank:rank})
+          }).catch(function(){ toast('已更新本機，但雲端更新失敗（試算表若尚未支援更新，可能需另外調整腳本）'); });
+        }
+      }
+      resetForm();
+      return;
+    }
 
     var rec = {
       id: uid(), date: date, compName: compName, team: team, ageGroup: ageGroup,
@@ -575,10 +632,20 @@
   // ---------- Chart ----------
   chipGroup('chartStrokeTabs', function(v){ chartStroke=v; renderChart(); });
   chipGroup('chartDistTabs', function(v){ chartDist=v; renderChart(); });
+  chipGroup('chartYearTabs', function(v){ chartYear=v; renderChart(); });
+
+  function renderYearTabs(){
+    var years = Array.from(new Set(records.map(function(r){ return (r.date||'').slice(0,4); }).filter(Boolean))).sort().reverse();
+    var opts = [{v:'',label:'全部年度'}].concat(years.map(function(y){ return {v:y,label:y+'年'}; }));
+    $('chartYearTabs').innerHTML = opts.map(function(o){
+      return '<div class="chip'+(o.v===chartYear?' sel':'')+'" data-v="'+o.v+'">'+o.label+'</div>';
+    }).join('');
+  }
 
   function renderChart(){
-    var list = records.filter(function(r){ return r.stroke===chartStroke && r.distance===chartDist; })
-                       .sort(function(a,b){ return a.date.localeCompare(b.date); });
+    var list = records.filter(function(r){
+      return r.stroke===chartStroke && r.distance===chartDist && (!chartYear || (r.date||'').slice(0,4)===chartYear);
+    }).sort(function(a,b){ return a.date.localeCompare(b.date); });
     var svg = $('growthChart');
     var badge = $('deltaBadge');
 
@@ -592,7 +659,7 @@
       (STROKE_COLOR[chartStroke]||'var(--pink)').replace('var(','').replace(')','')
     ).trim() || '#ff4f7e';
 
-    var W=300,H=180,padL=40,padR=12,padT=12,padB=24;
+    var W=300,H=180,padL=40,padR=12,padT=20,padB=24;
     var plotW=W-padL-padR, plotH=H-padT-padB;
     var secs = list.map(function(r){ return r.seconds; });
     var yMax = Math.max.apply(null,secs), yMin = Math.min.apply(null,secs);
@@ -615,15 +682,18 @@
     var dotsSvg = list.map(function(r,i){
       return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(r.seconds).toFixed(1)+'" r="3.6" fill="'+dotColor+'" stroke="#15161a" stroke-width="1.2"><title>'+r.date+' '+secToDisplay(r.seconds)+'</title></circle>';
     }).join('');
+    var valueLabelSvg = list.map(function(r,i){
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(yAt(r.seconds)-7).toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+dotColor+'">'+secToDisplay(r.seconds)+'</text>';
+    }).join('');
     var xLabelSvg = list.map(function(r,i){
       var show = list.length<=5 || i===0 || i===list.length-1 || i===Math.floor((list.length-1)/2);
       if(!show) return '';
-      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="7" font-weight="700" fill="#15161a">'+r.date.slice(5)+'</text>';
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="7" font-weight="700" fill="#15161a">'+fmtDateSlash(r.date)+'</text>';
     }).join('');
 
     svg.innerHTML = gridSvg + yLabelSvg
       + '<path d="'+pathD+'" fill="none" stroke="#15161a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'
-      + dotsSvg + xLabelSvg;
+      + dotsSvg + valueLabelSvg + xLabelSvg;
 
     var pb = computePB(chartStroke, chartDist);
     if(list.length<2 || !pb){ badge.innerHTML=''; return; }
@@ -653,6 +723,8 @@
       return (!fs || r.stroke===fs) && (!fd || r.distance===fd);
     }).sort(function(a,b){ return b.date.localeCompare(a.date); });
 
+    $('recordsSummary').textContent = '共計 '+list.length+' 個項次';
+
     var wrap = $('recordsCards');
     if(!list.length){
       wrap.innerHTML = '<div class="no-records">沒有符合條件的紀錄</div>';
@@ -669,11 +741,59 @@
         + '<div class="compname">'+r.compName+'</div>'
         + '<div class="meta"><span>'+r.team+'</span><span>'+r.ageGroup+'</span><span>'+r.diveType+'</span><span>'+r.poolType+'</span></div>'
         + '<div class="row2"><span></span><div class="time-wrap">'+rankLabel+'<span class="time-big">'+secToDisplay(r.seconds)+'</span></div></div>'
+        + '<div class="row3"><button class="mini-btn" onclick="editRecord(\''+r.id+'\')">✎ 編輯</button><button class="mini-btn danger" onclick="deleteRecord(\''+r.id+'\')">🗑 刪除</button></div>'
         + '</div>';
     }).join('');
   }
 
-  function renderAll(){ renderPB(); renderChart(); renderRecords(); }
+  function renderAll(){ renderYearTabs(); renderPB(); renderChart(); renderRecords(); }
+
+  // ---------- edit / delete ----------
+  function editRecord(id){
+    var r = records.find(function(x){ return x.id===id; });
+    if(!r) return;
+    $('f-date').value = r.date;
+    $('f-compName').value = r.compName;
+    setChipDefault('f-team', r.team);
+    setChipDefault('f-age', r.ageGroup);
+    setChipDefault('f-stroke', r.stroke);
+    $('distWrap').classList.add('show');
+    setChipDefault('f-distance', r.distance);
+    setChipDefault('f-dive', r.diveType);
+    setChipDefault('f-pool', r.poolType);
+    $('f-rank').value = r.rank || '';
+    var m = Math.floor(r.seconds/60), s = r.seconds - m*60, whole = Math.floor(s), hund = Math.round((s-whole)*100);
+    if(hund===100){ whole+=1; hund=0; }
+    $('f-min').value = m>0 ? m : '';
+    $('f-sec').value = whole;
+    $('f-hun').value = pad(hund);
+    editingId = id;
+    $('submitBtn').textContent = '更新紀錄';
+    $('cancelEditBtn').style.display = 'block';
+    document.querySelectorAll('nav.tabbar button').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('section.view').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelector('nav.tabbar button[data-view="view-add"]').classList.add('active');
+    $('view-add').classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+    toast('編輯模式：修改後按「更新紀錄」');
+  }
+  function deleteRecord(id){
+    if(!confirm('確定要刪除這筆紀錄嗎？此動作無法復原。')) return;
+    records = records.filter(function(x){ return x.id!==id; });
+    saveCache();
+    renderAll();
+    toast('已刪除紀錄');
+    if(config.apiUrl){
+      fetch(config.apiUrl, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({action:'delete', id:id})
+      }).catch(function(){});
+    }
+  }
+  window.editRecord = editRecord;
+  window.deleteRecord = deleteRecord;
+  $('cancelEditBtn').addEventListener('click', function(){ resetForm(); toast('已取消編輯'); });
 
   // ---------- tab nav ----------
   document.querySelectorAll('nav.tabbar button').forEach(function(btn){
