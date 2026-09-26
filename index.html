@@ -42,12 +42,6 @@
     font-size:12.5px; font-weight:600;
   }
   .gear-btn:active{ background:var(--paper); }
-  .refresh-btn{
-    position:absolute; top:22px; right:78px; padding:7px 12px; border-radius:16px;
-    border:1px solid var(--line); background:var(--card); color:var(--ink); cursor:pointer;
-    font-size:12.5px; font-weight:600;
-  }
-  .refresh-btn:active{ background:var(--paper); }
 
   /* Settings panel */
   .settings{ display:none; padding:16px 20px; background:var(--card); border-bottom:1px solid var(--line); }
@@ -129,10 +123,11 @@
   table.pb td.empty{color:var(--ink); font-weight:600; font-style:italic;}
 
   /* Chart view */
-  .stroke-tabs{display:flex; gap:7px; margin-bottom:10px; flex-wrap:wrap;}
-  .stroke-tabs .chip{flex:1; min-width:60px; text-align:center;}
-  .dist-tabs{display:flex; gap:8px; margin-bottom:16px;}
-  .dist-tabs .chip{flex:1; text-align:center; padding:7px 10px; border-radius:8px;}
+  .stroke-tabs{display:flex; gap:6px; margin-bottom:10px; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  .stroke-tabs::-webkit-scrollbar{display:none;}
+  .stroke-tabs .chip{flex:0 0 auto; white-space:nowrap; text-align:center; font-size:12px; padding:6px 12px;}
+  .dist-tabs{display:flex; gap:6px; margin-bottom:14px;}
+  .dist-tabs .chip{flex:1; text-align:center; padding:6px 8px; border-radius:8px; font-size:12px; white-space:nowrap;}
   .chart-card{padding:14px 10px 6px;}
   .delta-badge{
     display:flex; align-items:center; gap:8px; margin:14px 4px 0; font-size:13.5px; font-weight:600; color:var(--ink);
@@ -160,9 +155,14 @@
   .record-card .meta span{background:var(--paper); border:1px solid var(--line); border-radius:5px; padding:2px 8px;}
   .record-card .time-wrap{display:flex; flex-direction:column; align-items:flex-end;}
   .record-card .rank-label{font-size:12.5px; font-weight:800; color:#e8632b; margin-bottom:3px;}
-  .record-card .row3{display:flex; gap:8px; margin-top:12px; justify-content:flex-end;}
-  .mini-btn{font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer;}
-  .mini-btn.danger{color:#c0392b; border-color:rgba(192,57,43,.35);}
+  .record-card{cursor:pointer;}
+  .record-card:active{background:var(--paper);}
+  .del-icon{
+    width:22px; height:22px; border-radius:50%; display:inline-flex; flex-shrink:0;
+    align-items:center; justify-content:center; border:1px solid var(--line);
+    background:var(--card); color:#c0392b; cursor:pointer; font-size:11px;
+  }
+  .del-icon:active{background:#fbeceb;}
   .record-card .time-big{font-size:18px; font-weight:700; color:var(--ink); text-align:right;}
   .record-card .row2{display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px;}
   .no-records{text-align:center; font-weight:600; color:var(--ink); padding:24px; }
@@ -189,7 +189,6 @@
 <div class="app">
 
   <header>
-    <button class="refresh-btn" id="refreshBtn" aria-label="重新整理">↻ 重新整理</button>
     <button class="gear-btn" id="gearBtn" aria-label="設定">設定</button>
     <h1>FIFI的海女比賽紀錄</h1>
     <p class="sub">SWIM MEET LOG · 泳道上的每一秒</p>
@@ -329,7 +328,7 @@
     <!-- FULL RECORDS -->
     <section class="view" id="view-records">
       <h2 class="section-title">全紀錄查詢</h2>
-      <p class="section-hint">完整比賽軌跡，可依項目與距離篩選。</p>
+      <p class="section-hint">點卡片可修改該筆紀錄，右上角 ✕ 可刪除。</p>
       <div class="filter-wrap">
         <select class="filter" id="rf-stroke"><option value="">項目：全部</option><option>自由式</option><option>仰式</option><option>蛙式</option><option>蝶式</option><option>混合式</option><option>接力</option></select>
         <select class="filter" id="rf-distance"><option value="">距離：全部</option><option value="50">50m</option><option value="100">100m</option><option value="200">200m</option></select>
@@ -472,10 +471,6 @@
     toast('設定已儲存');
   });
   $('syncBtn').addEventListener('click', function(){ fetchCloud(true); });
-  $('refreshBtn').addEventListener('click', function(){
-    if(config.apiUrl){ fetchCloud(true); }
-    else { renderAll(); toast('已重新整理'); }
-  });
 
   function fetchCloud(manual){
     if(!config.apiUrl){ if(manual) toast('請先貼上 Google Sheet 網址'); return; }
@@ -683,12 +678,18 @@
       return '<circle cx="'+xAt(i).toFixed(1)+'" cy="'+yAt(r.seconds).toFixed(1)+'" r="3.6" fill="'+dotColor+'" stroke="#15161a" stroke-width="1.2"><title>'+r.date+' '+secToDisplay(r.seconds)+'</title></circle>';
     }).join('');
     var valueLabelSvg = list.map(function(r,i){
-      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(yAt(r.seconds)-7).toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+dotColor+'">'+secToDisplay(r.seconds)+'</text>';
+      var label = secToDisplay(r.seconds);
+      var lx = xAt(i), ly = yAt(r.seconds)-9;
+      var w = label.length*4.6+5;
+      return '<rect x="'+(lx-w/2).toFixed(1)+'" y="'+(ly-6.2).toFixed(1)+'" width="'+w.toFixed(1)+'" height="9" rx="2.5" fill="#ffffff" fill-opacity=".92"/>'
+        + '<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+dotColor+'">'+label+'</text>';
     }).join('');
     var xLabelSvg = list.map(function(r,i){
       var show = list.length<=5 || i===0 || i===list.length-1 || i===Math.floor((list.length-1)/2);
       if(!show) return '';
-      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="7" font-weight="700" fill="#15161a">'+fmtDateSlash(r.date)+'</text>';
+      var anchor = 'middle';
+      if(i===0) anchor='start'; else if(i===list.length-1) anchor='end';
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="'+anchor+'" font-size="7" font-weight="700" fill="#15161a">'+fmtDateSlash(r.date)+'</text>';
     }).join('');
 
     svg.innerHTML = gridSvg + yLabelSvg
@@ -733,15 +734,17 @@
     wrap.innerHTML = list.map(function(r){
       var color = STROKE_COLOR[r.stroke] || 'var(--blue)';
       var rankLabel = r.rank ? '<div class="rank-label">名次 '+r.rank+'</div>' : '';
-      return '<div class="record-card pop-card">'
+      return '<div class="record-card pop-card" onclick="editRecord(\''+r.id+'\')">'
         + '<div class="row1">'
         +   '<span class="date">'+r.date+'</span>'
-        +   '<span class="tag" style="background:'+color+'">'+r.stroke+' '+r.distance+'m</span>'
+        +   '<span style="display:flex;align-items:center;gap:8px;">'
+        +     '<span class="tag" style="background:'+color+'">'+r.stroke+' '+r.distance+'m</span>'
+        +     '<span class="del-icon" onclick="event.stopPropagation();deleteRecord(\''+r.id+'\')" aria-label="刪除">✕</span>'
+        +   '</span>'
         + '</div>'
         + '<div class="compname">'+r.compName+'</div>'
         + '<div class="meta"><span>'+r.team+'</span><span>'+r.ageGroup+'</span><span>'+r.diveType+'</span><span>'+r.poolType+'</span></div>'
         + '<div class="row2"><span></span><div class="time-wrap">'+rankLabel+'<span class="time-big">'+secToDisplay(r.seconds)+'</span></div></div>'
-        + '<div class="row3"><button class="mini-btn" onclick="editRecord(\''+r.id+'\')">✎ 編輯</button><button class="mini-btn danger" onclick="deleteRecord(\''+r.id+'\')">🗑 刪除</button></div>'
         + '</div>';
     }).join('');
   }
